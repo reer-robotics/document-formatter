@@ -1,0 +1,5 @@
+Synthetic follow-up memo
+
+Sample count: 25 runs
+
+The newer memo lists 25 runs but does not explain whether these replace or extend the original 20. Resolve the discrepancy before combining totals.

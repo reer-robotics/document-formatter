@@ -1,0 +1,35 @@
+[
+  {
+    "kind": "uncited_section",
+    "message": "Context: no source references; review support."
+  },
+  {
+    "kind": "incomplete_section",
+    "message": "Method: content is missing or marked TODO."
+  },
+  {
+    "kind": "incomplete_section",
+    "message": "Evidence: content is missing or marked TODO."
+  },
+  {
+    "kind": "incomplete_section",
+    "message": "Interpretation: content is missing or marked TODO."
+  },
+  {
+    "kind": "incomplete_section",
+    "message": "Limitations: content is missing or marked TODO."
+  },
+  {
+    "kind": "incomplete_section",
+    "message": "Next steps: content is missing or marked TODO."
+  },
+  {
+    "kind": "possible_value_conflict",
+    "message": "sample count: different values [20.0, 25.0] runs; check scope, date and revision.",
+    "sources": [
+      "Sf4637415386faf7d-3",
+      "S0c2a86db614075d4-1",
+      "S7685787bde7af82e-2"
+    ]
+  }
+]

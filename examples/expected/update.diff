@@ -1,0 +1,21 @@
+--- accepted
++++ proposed
+@@ -88,6 +88,18 @@
+ 
+ > Total | =SUM(B2:B3) | =SUM(C2:C3)
+ 
++Source excerpt — follow-up.txt, paragraph 1 [S7685787bde7af82e-1]
++
++> Synthetic follow-up memo
++
++Source excerpt — follow-up.txt, paragraph 2 [S7685787bde7af82e-2]
++
++> Sample count: 25 runs
++
++Source excerpt — follow-up.txt, paragraph 3 [S7685787bde7af82e-3]
++
++> The newer memo lists 25 runs but does not explain whether these replace or extend the original 20. Resolve the discrepancy before combining totals.
++
+ ## Interpretation
+ 
+ TODO: Compare evidence and distinguish hypotheses from findings.

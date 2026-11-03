@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "id": "technical-report",
+  "name": "Technical report",
+  "description": "Source-linked technical report for human review.",
+  "sections": [
+    {
+      "key": "context",
+      "title": "Context",
+      "instruction": "State the question and scope.",
+      "required": true
+    },
+    {
+      "key": "method",
+      "title": "Method",
+      "instruction": "Explain the method actually recorded.",
+      "required": true
+    },
+    {
+      "key": "evidence",
+      "title": "Evidence",
+      "instruction": "Present source-linked observations and measurements.",
+      "required": true
+    },
+    {
+      "key": "interpretation",
+      "title": "Interpretation",
+      "instruction": "Compare evidence and distinguish hypotheses from findings.",
+      "required": true
+    },
+    {
+      "key": "limitations",
+      "title": "Limitations",
+      "instruction": "State missing evidence and conflicting accounts.",
+      "required": true
+    },
+    {
+      "key": "next_steps",
+      "title": "Next steps",
+      "instruction": "List proposed actions without implying approval.",
+      "required": true
+    }
+  ]
+}

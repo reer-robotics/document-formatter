@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "id": "knowledge-article",
+  "name": "Knowledge article",
+  "description": "Source-linked knowledge article for human review.",
+  "sections": [
+    {
+      "key": "summary",
+      "title": "Summary",
+      "instruction": "Summarize the supported topic.",
+      "required": true
+    },
+    {
+      "key": "context",
+      "title": "Background",
+      "instruction": "Establish the scope.",
+      "required": true
+    },
+    {
+      "key": "evidence",
+      "title": "Supporting material",
+      "instruction": "Explain the evidence with citations.",
+      "required": true
+    },
+    {
+      "key": "interpretation",
+      "title": "Discussion",
+      "instruction": "Connect sources and preserve uncertainty.",
+      "required": true
+    },
+    {
+      "key": "limitations",
+      "title": "Limitations",
+      "instruction": "State what cannot be concluded.",
+      "required": true
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "id": "investigation-note",
+  "name": "Investigation note",
+  "description": "Source-linked investigation note for human review.",
+  "sections": [
+    {
+      "key": "question",
+      "title": "Question",
+      "instruction": "State the investigation question.",
+      "required": true
+    },
+    {
+      "key": "evidence",
+      "title": "Observations",
+      "instruction": "Describe what is recorded.",
+      "required": true
+    },
+    {
+      "key": "hypotheses",
+      "title": "Hypotheses",
+      "instruction": "Present explanations as hypotheses, not established causes.",
+      "required": true
+    },
+    {
+      "key": "limitations",
+      "title": "Open questions",
+      "instruction": "Identify gaps and contradictions.",
+      "required": true
+    },
+    {
+      "key": "next_steps",
+      "title": "Next steps",
+      "instruction": "Propose tests supported by the context.",
+      "required": true
+    }
+  ]
+}

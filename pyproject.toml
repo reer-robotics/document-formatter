@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "reer-document-formatter"
+version = "0.1.0"
+description = "Local-first document collections, selectable templates, and source-linked writing proposals"
+requires-python = ">=3.11"
+license = "MIT"
+dependencies = ["pypdf>=6,<7", "python-docx>=1.2,<2", "openpyxl>=3.1,<4", "Pillow>=11,<13", "jsonschema>=4.23,<5", "Flask>=3.1,<4", "httpx>=0.28,<1"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<10", "reportlab>=4,<5", "ruff>=0.14,<1"]
+
+[project.scripts]
+docformat = "document_formatter.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+document_formatter = ["templates/*.json", "web/*.html", "*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
