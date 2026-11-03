@@ -1,0 +1,6 @@
+{
+  "id": "review",
+  "version": 1,
+  "role": "logic-review",
+  "instruction": "Independently re-read the draft against the supplied evidence and deterministic checks. Identify unsupported conclusions, numerical discrepancies, inconsistent scope, omitted qualifications and conflicting accounts. Tie concerns to section names and known source markers where applicable. Suggest only tentative source relationships. Do not rewrite or approve the draft. This is another pass by the same model, not an independent expert judgment."
+}

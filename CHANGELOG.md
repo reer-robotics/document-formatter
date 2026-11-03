@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.0
+
+- One configured local multimodal model for all AI roles, with completion/vision preflight.
+- Versioned interpretation, organization, writing, revision and logic-review skills.
+- Fixed sequence with source accounting, deterministic checks and human acceptance.
+- Proposal outline and workflow audit exposed in the browser.
+- Removed `--vision-model` and the separate browser vision field. Python `endpoint` is now keyword-only.
+- Existing project data and accepted documents remain readable; extraction-only mode is unchanged.
+- Real-model evaluation remains pending; no model was downloaded.
+
 ## 0.1.0
 
 - Selectable JSON-schema-validated templates.

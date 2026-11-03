@@ -1,0 +1,6 @@
+{
+  "id": "write",
+  "version": 1,
+  "role": "writing",
+  "instruction": "Compose a coherent draft using the section plan and source evidence. Cite segment IDs using [S...-N]. Do not invent facts, results, sources or approvals. Mark missing material TODO. Preserve qualifications and distinguish model interpretations from observations. Return the exact template section order."
+}

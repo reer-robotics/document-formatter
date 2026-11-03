@@ -1,12 +1,12 @@
 # Architecture and integration boundary
 
-The package has five small components: `ingest` (bounded parsers), `engine` (project state and proposals), `model` (local Ollama transport), `cli` (commands), and `server` (single-user demonstration). Neither Docusaurus nor Decap is a dependency.
+The package has six small components: `ingest` (bounded parsers), `engine` (project state and proposals), `model` (local Ollama transport), `workflow` (fixed role passes and skill contracts), `cli` (commands), and `server` (single-user demonstration). Neither Docusaurus nor Decap is a dependency.
 
 ## Local project files
 
 - `project.json`: versioned template, source manifest, extracted segments and accepted document.
 - `assets/`: normalized image copies; original image metadata is not retained.
-- `proposal.json`: latest proposed document, base version, checks, model identity, visual interpretations and suggested relationships.
+- `proposal.json`: latest proposed document, base version, checks, model identity, visual interpretations, organization plan, workflow audit and suggested relationships.
 - `proposal.md`: human-readable proposed writing with source register.
 - `document.md`: exported accepted writing.
 - `history/`: snapshots of the previous state and acceptance/manual-edit audit records.
@@ -30,3 +30,12 @@ Pin a toolkit version in an adapter maintained by the journal. Provide authorize
 ## Verification boundary
 
 The example and unit tests exercise real parsers, state transitions, stale-proposal rejection, HTTP controls and model response contracts. Mock model responses verify plumbing only. Semantic quality and real vision inference must be evaluated with a chosen installed model in a later step.
+
+
+## One-model workflow
+
+The executable workflow loads `workflow.json` and the five `skills/*.json` instruction files. Roles have no shell, network-search, publishing, or acceptance tools. A single Ollama adapter instance executes all AI steps against one selected local model. Capability preflight runs before any generation. The three initial model passes are organization, writing and review, plus one interpretation call per extracted image; an update substitutes the revision skill for writing.
+
+Structured schemas and source-accounting checks execute in Python. Invalid output or provider errors abort the run with no automatic retry, leave accepted content unchanged, and do not replace an earlier proposal. Failed attempts are surfaced as errors; this prototype does not persist a separate failed-run audit. Extraction-only mode bypasses the entire AI workflow and records `workflow: null`.
+
+Skill/model changes must be evaluated against fixed regression cases. Recorded instructions and metadata improve traceability but cannot guarantee deterministic output or prevent the same model repeating its own error.

@@ -26,19 +26,36 @@ class Ollama:
             raise ValueError("Choose an installed local model, not a cloud model")
         self.model, self.endpoint = model, endpoint.rstrip("/")
 
+    def inspect(self, require_multimodal=False):
+        if not hasattr(self, "_metadata"):
+            with httpx.Client(
+                timeout=30, trust_env=False, follow_redirects=False
+            ) as client:
+                info = client.post(
+                    self.endpoint + "/api/show", json={"model": self.model}
+                )
+                info.raise_for_status()
+                self._metadata = info.json()
+        meta = self._metadata
+        if meta.get("remote_host") or meta.get("remote_model"):
+            raise ValueError("Remote/cloud model execution is not allowed")
+        if require_multimodal and not {"completion", "vision"}.issubset(
+            meta.get("capabilities", [])
+        ):
+            raise ValueError(
+                "The single-model workflow requires one installed model with completion and vision capabilities"
+            )
+        return meta
+
     def generate(self, prompt, schema, images=None):
+        meta = self.inspect()
+        if images and "vision" not in meta.get("capabilities", []):
+            raise ValueError(
+                "Image interpretation requires a vision-capable local model"
+            )
         with httpx.Client(
             timeout=180, trust_env=False, follow_redirects=False
         ) as client:
-            info = client.post(self.endpoint + "/api/show", json={"model": self.model})
-            info.raise_for_status()
-            meta = info.json()
-            if meta.get("remote_host") or meta.get("remote_model"):
-                raise ValueError("Remote/cloud model execution is not allowed")
-            if images and "vision" not in meta.get("capabilities", []):
-                raise ValueError(
-                    "Image interpretation requires a vision-capable local model"
-                )
             message = {"role": "user", "content": prompt}
             if images:
                 message["images"] = images

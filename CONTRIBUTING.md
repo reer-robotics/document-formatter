@@ -12,4 +12,6 @@ Start with a small issue describing the input, expected output, and observed fai
 
 Template changes must remain compatible with the published schema. Parser extensions must preserve source locations, declare unsupported features, and avoid silently dropping content. Model extensions must not introduce network calls in offline mode or hide failures with a generated-looking fallback. Do not claim semantic quality from mock tests.
 
-The owner is collecting feedback on v0.1 before adding more modules. Suggested follow-ups include real local-model evaluation, OCR, additional export formats and richer manual review. The reading-assistant and graph products are deliberately separate future work.
+The owner is collecting feedback on v0.2 before adding more modules. Suggested follow-ups include real local-model evaluation, OCR, additional export formats and richer manual review. The reading-assistant and graph products are deliberately separate future work.
+
+Skill changes must update the skill version and, when behavior or ordering changes, the workflow version. Preserve the one-model contract, source accounting, human acceptance gate, and absence of automatic fallback. Add tests for new skill output contracts. The model-free test suite checks orchestration, not real-model quality.

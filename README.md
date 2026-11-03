@@ -2,14 +2,14 @@
 
 A local-first formatting engine for collections of evidence. Import files, choose a standard template, inspect a proposed draft, and accept a revision. Add material later while preserving the accepted document and its edit history.
 
-**Version 0.1 is a feedback prototype.** It is a standalone public project, not connected to any private company journal. All committed examples are synthetic.
+**Version 0.2 is a feedback prototype.** It is a standalone public project, not connected to any private company journal. All committed examples are synthetic.
 
 ## Two explicit operating modes
 
 | Mode | What it does | What it does not do |
 | --- | --- | --- |
 | Extraction only (default) | Extract source text, organize excerpts in a template, preserve references, flag structural gaps and matching-label numerical discrepancies | No semantic synthesis, image understanding, or general contradiction detection |
-| Local Ollama | Propose coherent writing, describe images with a vision model, suggest source relationships, and review logical gaps | No proof of truth, automatic publication, or reliable scientific certification |
+| One local multimodal model | Interpret images, organize sources, draft or revise writing, and review logic in separate fixed passes | No proof of truth, automatic publication, or reliable scientific certification |
 
 **No model is bundled or downloaded.** The first demonstration and CI tests run without a model. Ollama integration is contract-tested with mocks; real-model quality has not been evaluated in this release.
 
@@ -38,9 +38,9 @@ Leave the model fields blank to try the extraction-only demonstration. The local
 | `.docx` | Paragraphs and tables in document order, supported embedded raster images | No legacy `.doc`, tracked-change resolution, text boxes, headers, or image anchoring |
 | `.xlsx` | Cell rows and formula expressions | No legacy `.xls`, formula evaluation, charts, images, or styling |
 | `.csv`, `.tsv` | Rows and cell values | UTF-8 input; no type inference or formula evaluation |
-| `.png`, `.jpg`, `.jpeg`, `.webp` | Image dimensions; normalized local image copy | Meaningful descriptions require a configured vision model |
+| `.png`, `.jpg`, `.jpeg`, `.webp` | Image dimensions; normalized local image copy | Descriptions use the same configured multimodal model as writing |
 
-Outputs are **Markdown and structured JSON**, with a source register, proposed-change diff, check results, and local revision history. Word and PDF export are not included in v0.1.
+Outputs are **Markdown and structured JSON**, with a source register, proposed-change diff, check results, and local revision history. Word and PDF export are not included in v0.2.
 
 Limits: 20 MB per file, 50 files/project, 120,000 extracted characters/project, 100 PDF pages/file, 10,000 spreadsheet cells/workbook, 20 images per proposal. Model requests over 80,000 characters fail explicitly rather than silently dropping sources. Parsing trusted local files is assumed; these limits are not a complete hostile-file sandbox.
 
@@ -80,21 +80,25 @@ project.accept(proposal['id'])
 
 `docformat serve --workspace workspace --port 4173` opens the workflow through a loopback HTTP server. Upload multiple files, choose a template, review the proposal, edit accepted sections, and export. The UI uses the same engine as the CLI and library. Refreshing does not lose project state. The HTTP API is an internal demo interface, not a supported multi-user API.
 
-## Connect an existing Ollama model
+## One-model framework
 
-Start your own local Ollama service and select an already-installed model. Do not use a cloud-backed model. The formatter never calls a model download endpoint.
+Choose **one installed local multimodal model**. Every AI role uses the same model and endpoint; separate text, vision and reviewer settings are not supported. Even text-only collections require the configured model to advertise both `completion` and `vision`, so the workflow has a consistent capability contract.
 
 ```bash
-docformat propose workspace/study --model YOUR_INSTALLED_TEXT_MODEL
-# For image understanding, also select an installed vision-capable model:
-docformat propose workspace/study --model YOUR_TEXT_MODEL --vision-model YOUR_VISION_MODEL
+docformat propose workspace/study --model YOUR_INSTALLED_MULTIMODAL_MODEL
+# Inspect the versioned workflow without connecting to a model:
+docformat workflow
 ```
 
-The default endpoint is `http://127.0.0.1:11434`. The CLI accepts a different explicit loopback IP/port with `--endpoint`. Redirects, environment proxies, remote endpoints and detected cloud models are refused. This cannot prove that a locally controlled service never forwards requests; configure Ollama for local inference.
+The fixed sequence is **interpret extracted images → organize evidence → write (or revise) → deterministic validation → logic review → human acceptance**. Each role has its own versioned skill instructions and structured output contract. Images are processed automatically when present; no separate vision-model option is needed. Without images, interpretation is recorded as skipped.
 
-The text model receives the extracted collection, the accepted document, and any generated image interpretations. Visual descriptions, relationships, and logical concerns are proposals stored alongside the draft. Source text is treated as untrusted data. Structured output validation rejects invalid section structure and unknown source IDs, but cannot establish that a citation supports a claim.
+The organizer must account for every source segment, including explicit reasons for unassigned material. A proposed outline is an accounting plan, not proof that every fact made it into the draft. The writer receives that plan and source evidence. For later edits, the revision skill also receives the accepted writing and identifies newly imported sources. The same model then checks its work in a separate pass. This is **not an independent expert review**.
 
-See the official [Ollama chat API](https://docs.ollama.com/api/chat), [structured outputs](https://docs.ollama.com/capabilities/structured-outputs), and [vision guide](https://docs.ollama.com/capabilities/vision).
+The default endpoint is `http://127.0.0.1:11434`; the CLI accepts a different numeric loopback address with `--endpoint`. No model is downloaded and there is no cloud or extraction fallback when a selected model fails. Redirects, environment proxies, remote endpoints and detected cloud models are refused. A locally administered service can still forward requests, so configure Ollama for local inference.
+
+Every completed AI proposal records the workflow and skill versions/hashes, requested model, endpoint, capability metadata fingerprint, template fingerprint, input source hashes, stage results, and output fingerprints. The model metadata fingerprint is **not** a hash of the actual model weights. Review findings do not automatically approve or rewrite a draft.
+
+[Workflow and skills](docs/workflow.md) describes the contracts and migration from v0.1. The official [Ollama chat API](https://docs.ollama.com/api/chat), [structured outputs](https://docs.ollama.com/capabilities/structured-outputs), and [vision guide](https://docs.ollama.com/capabilities/vision) describe the adapter protocol.
 
 ## Examples
 
@@ -119,6 +123,6 @@ python examples/run_demo.py
 python -m pip wheel --no-deps . -w dist
 ```
 
-MIT licensed. This is a repository release; it is not published to PyPI. Stop at this version for user feedback before expanding scope.
+MIT licensed. This is a repository release; it is not published to PyPI. This revision stays within the formatter repository; model downloads and additional repositories remain deferred.
 
 ![Local extraction and review demonstration](docs/demo.jpg)

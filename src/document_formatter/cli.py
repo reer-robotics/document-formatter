@@ -20,7 +20,6 @@ def main():
     p = sub.add_parser("propose")
     p.add_argument("project")
     p.add_argument("--model")
-    p.add_argument("--vision-model")
     p.add_argument("--endpoint", default="http://127.0.0.1:11434")
     p = sub.add_parser("accept")
     p.add_argument("project")
@@ -31,6 +30,7 @@ def main():
     p = sub.add_parser("check")
     p.add_argument("project")
     sub.add_parser("templates")
+    sub.add_parser("workflow")
     p = sub.add_parser("serve")
     p.add_argument("--workspace", default="workspace")
     p.add_argument("--port", type=int, default=4173)
@@ -38,6 +38,10 @@ def main():
     try:
         if args.command == "templates":
             print("\n".join(template_names()))
+        elif args.command == "workflow":
+            from .workflow import resource
+
+            print(json.dumps(resource("workflow.json"), indent=2))
         elif args.command == "serve":
             from .server import create_app
 
@@ -50,9 +54,7 @@ def main():
         elif args.command == "ingest":
             print(json.dumps(Project(args.project).ingest(args.inputs)))
         elif args.command == "propose":
-            proposal = Project(args.project).propose(
-                args.model, args.vision_model, args.endpoint
-            )
+            proposal = Project(args.project).propose(args.model, endpoint=args.endpoint)
             print(
                 json.dumps(
                     {

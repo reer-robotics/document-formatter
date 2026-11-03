@@ -122,27 +122,88 @@ def test_nonlocal_endpoints_rejected(endpoint):
         Ollama("local-test", endpoint)
 
 
-def test_model_contract_and_unknown_reference(project, monkeypatch):
+def mock_workflow_model(project, monkeypatch):
     calls = []
     original = project.propose()["document"]
+    monkeypatch.setattr(
+        Ollama,
+        "inspect",
+        lambda self, require_multimodal=False: {
+            "capabilities": ["completion", "vision"]
+        },
+    )
 
     def generate(self, prompt, schema, images=None):
-        calls.append(prompt)
-        return (
-            copy.deepcopy(original)
-            if "sections" in schema["properties"]
-            else {
-                "issues": ["Mock result; not actual AI evaluation."],
-                "relationships": [],
+        request = json.loads(prompt)
+        skill = request["skill"]["id"]
+        calls.append(
+            {
+                "skill": skill,
+                "model": self.model,
+                "client": id(self),
+                "input": request["input"],
+                "images": images,
             }
         )
+        if skill == "interpret":
+            return {
+                "description": "Mock-only: two bars",
+                "uncertainties": "No real model was used",
+            }
+        if skill == "organize":
+            context = request["input"]
+            ids = [
+                segment["id"]
+                for source in context["sources"]
+                for segment in source["segments"]
+            ]
+            return {
+                "sections": [
+                    {
+                        "key": section["key"],
+                        "plan": "Mock outline",
+                        "source_ids": ids if i == 0 else [],
+                    }
+                    for i, section in enumerate(context["template"]["sections"])
+                ],
+                "unassigned": [],
+            }
+        if skill in {"write", "revise"}:
+            return copy.deepcopy(original)
+        return {
+            "issues": ["Mock result; not actual AI evaluation."],
+            "relationships": [],
+        }
 
     monkeypatch.setattr(Ollama, "generate", generate)
-    result = project.propose(model="mock-local")
-    assert result["mode"] == "ollama" and len(calls) == 2
+    return calls, original
+
+
+def test_model_contract_and_unknown_reference(project, monkeypatch):
+    calls, original = mock_workflow_model(project, monkeypatch)
+    result = project.propose(model="mock-multimodal")
+    assert result["mode"] == "ollama"
+    assert [c["skill"] for c in calls] == ["interpret", "organize", "write", "review"]
+    assert {c["model"] for c in calls} == {"mock-multimodal"}
+    assert len({c["client"] for c in calls}) == 1
+    assert result["workflow"]["steps"][-1] == {
+        "step": "human_acceptance",
+        "status": "pending",
+    }
+    assert result["workflow"]["template_sha256"]
+    assert set(result["workflow"]["skills"]) == {
+        "interpret",
+        "organize",
+        "write",
+        "revise",
+        "review",
+    }
+    assert project.load()["document"] is None
     original["sections"][0]["content"] = "Invented reference [S0000000000000000-1]"
+    before = (project.root / "proposal.json").read_text()
     with pytest.raises(ValueError, match="invented"):
-        project.propose(model="mock-local")
+        project.propose(model="mock-multimodal")
+    assert (project.root / "proposal.json").read_text() == before
 
 
 def test_server_requires_token_and_safe_host(tmp_path):
@@ -231,22 +292,114 @@ def test_ollama_refuses_remote_model_metadata(monkeypatch):
 
 
 def test_vision_descriptions_are_labeled_proposals(project, monkeypatch):
-    original = project.propose()["document"]
-
-    def generate(self, prompt, schema, images=None):
-        if images:
-            return {
-                "description": "Mock-only: two bars",
-                "uncertainties": "No real model was used",
-            }
-        if "sections" in schema["properties"]:
-            return copy.deepcopy(original)
-        return {"issues": [], "relationships": []}
-
-    monkeypatch.setattr(Ollama, "generate", generate)
-    result = project.propose("mock-text", "mock-vision")
-    assert result["visual_interpretations"][0]["model"] == "mock-vision"
+    mock_workflow_model(project, monkeypatch)
+    result = project.propose("mock-multimodal")
+    assert result["visual_interpretations"][0]["model"] == "mock-multimodal"
     assert (
         result["visual_interpretations"][0]["uncertainties"] == "No real model was used"
     )
     assert project.load()["document"] is None
+
+
+def test_incremental_uses_revision_skill_and_supplies_manual_edits(
+    project, samples, monkeypatch
+):
+    calls, _ = mock_workflow_model(project, monkeypatch)
+    first = project.propose("mock-multimodal")
+    project.accept(first["id"])
+    document = project.load()["document"]
+    document["sections"][0]["content"] = "Manual scope: simulation only."
+    project.edit(document)
+    project.ingest([samples[1]])
+    calls.clear()
+    second = project.propose("mock-multimodal")
+    assert [c["skill"] for c in calls] == ["interpret", "organize", "revise", "review"]
+    assert (
+        calls[2]["input"]["current_document"]["sections"][0]["content"]
+        == "Manual scope: simulation only."
+    )
+    assert len(calls[2]["input"]["new_source_ids"]) == 1
+    assert project.load()["document"] == document
+    assert second["base_version"] == project.load()["version"]
+
+
+def test_organization_cannot_silently_drop_evidence(project, monkeypatch):
+    calls, _ = mock_workflow_model(project, monkeypatch)
+    real_mock = Ollama.generate
+
+    def missing(self, prompt, schema, images=None):
+        data = real_mock(self, prompt, schema, images)
+        if json.loads(prompt)["skill"]["id"] == "organize":
+            data["sections"][0]["source_ids"].pop()
+        return data
+
+    monkeypatch.setattr(Ollama, "generate", missing)
+    with pytest.raises(ValueError, match="every source segment"):
+        project.propose("mock-multimodal")
+    assert [c["skill"] for c in calls] == ["interpret", "organize"]
+
+
+def test_text_only_model_rejected_before_generation(project, monkeypatch):
+    import httpx
+
+    original_client = httpx.Client
+    requests = []
+
+    def respond(request):
+        requests.append(request.url.path)
+        return httpx.Response(200, json={"capabilities": ["completion"]})
+
+    monkeypatch.setattr(
+        httpx,
+        "Client",
+        lambda **kwargs: original_client(
+            transport=httpx.MockTransport(respond), **kwargs
+        ),
+    )
+    with pytest.raises(ValueError, match="completion and vision"):
+        project.propose("text-only")
+    assert requests == ["/api/show"]
+    assert not (project.root / "proposal.json").exists()
+
+
+def test_offline_mode_never_touches_ollama(project, monkeypatch):
+    def unexpected(*args, **kwargs):
+        raise AssertionError("Offline mode contacted a model")
+
+    monkeypatch.setattr(Ollama, "inspect", unexpected)
+    result = project.propose()
+    assert result["workflow"] is None and result["outline"] is None
+    assert "not been visually interpreted" in " ".join(result["warnings"])
+
+
+def test_text_collection_skips_interpretation(tmp_path, monkeypatch):
+    source = tmp_path / "note.txt"
+    source.write_text("Synthetic observation.")
+    project = Project.create(tmp_path / "text-project")
+    project.ingest([source])
+    calls, _ = mock_workflow_model(project, monkeypatch)
+    result = project.propose("mock-multimodal")
+    assert [c["skill"] for c in calls] == ["organize", "write", "review"]
+    assert result["workflow"]["steps"][0]["status"] == "skipped"
+
+
+def test_model_failure_has_no_fallback_or_automatic_acceptance(project, monkeypatch):
+    import httpx
+
+    monkeypatch.setattr(
+        Ollama,
+        "inspect",
+        lambda *args, **kwargs: {"capabilities": ["completion", "vision"]},
+    )
+    calls = []
+
+    def fail(*args, **kwargs):
+        calls.append(1)
+        raise httpx.ReadTimeout("Model timeout")
+
+    monkeypatch.setattr(Ollama, "generate", fail)
+    with pytest.raises(httpx.ReadTimeout):
+        project.propose("mock-multimodal")
+    assert len(calls) == 1
+    assert project.load()["document"] is None
+    assert not (project.root / "proposal.json").exists()

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "reer-document-formatter"
-version = "0.1.0"
+version = "0.2.0"
 description = "Local-first document collections, selectable templates, and source-linked writing proposals"
 requires-python = ">=3.11"
 license = "MIT"
@@ -20,7 +20,7 @@ docformat = "document_formatter.cli:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-document_formatter = ["templates/*.json", "web/*.html", "*.json"]
+document_formatter = ["templates/*.json", "web/*.html", "*.json", "skills/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

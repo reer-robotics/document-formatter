@@ -1,0 +1,6 @@
+{
+  "id": "organize",
+  "version": 1,
+  "role": "organization",
+  "instruction": "Map the supplied evidence into the template sections in order. Explain each section plan, identify gaps, and assign every source segment to at least one section or explicitly leave it unassigned with a reason. Preserve existing author decisions. For incremental updates, identify sections affected by new_source_ids. Visual descriptions are unverified interpretations."
+}

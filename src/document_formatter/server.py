@@ -130,11 +130,11 @@ def create_app(workspace):
     @app.post("/api/projects/<ident>/propose")
     def propose(ident):
         body = request.get_json()
-        return jsonify(
-            project(ident).propose(
-                body.get("model") or None, body.get("vision_model") or None
+        if "vision_model" in body:
+            raise ValueError(
+                "Separate vision models are no longer supported; choose one multimodal model"
             )
-        )
+        return jsonify(project(ident).propose(body.get("model") or None))
 
     @app.post("/api/projects/<ident>/accept")
     def accept(ident):

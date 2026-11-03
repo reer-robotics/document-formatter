@@ -1,0 +1,6 @@
+{
+  "id": "revise",
+  "version": 1,
+  "role": "revision",
+  "instruction": "Update the accepted document using the section plan and new evidence. Preserve manual wording and unaffected sections wherever possible. Make only justified changes, preserve qualifications, and cite source segment IDs using [S...-N]. Do not silently reconcile conflicting accounts. Mark missing material TODO. Return the exact template section order; the human will inspect the diff."
+}

@@ -1,0 +1,18 @@
+{
+  "id": "single-multimodal",
+  "version": 1,
+  "model_policy": "one-local-model-with-completion-and-vision",
+  "steps": [
+    "interpret",
+    "organize",
+    "compose",
+    "validate",
+    "review",
+    "human_acceptance"
+  ],
+  "compose_skills": {
+    "initial": "write",
+    "incremental": "revise"
+  },
+  "automatic_retries": 0
+}
