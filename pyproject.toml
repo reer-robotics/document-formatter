@@ -8,7 +8,7 @@ version = "0.2.0"
 description = "Local-first document collections, selectable templates, and source-linked writing proposals"
 requires-python = ">=3.11"
 license = "MIT"
-dependencies = ["pypdf>=6,<7", "python-docx>=1.2,<2", "openpyxl>=3.1,<4", "Pillow>=11,<13", "jsonschema>=4.23,<5", "Flask>=3.1,<4", "httpx>=0.28,<1"]
+dependencies = ["pypdf>=6,<8", "python-docx>=1.2,<2", "openpyxl>=3.1,<4", "Pillow>=11,<13", "jsonschema>=4.23,<5", "Flask>=3.1,<4", "httpx>=0.28,<1"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8,<10", "reportlab>=4,<5", "ruff>=0.14,<1"]
